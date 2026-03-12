@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NewsWave — Real-Time Intelligence</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@300;400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- ░░ SCAN LINE OVERLAY ░░ -->
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- ░░ SIDEBAR ░░ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-mark">NW</span>
+      <span class="logo-text">News<em>Wave</em></span>
+    </div>
+
+    <!-- Country Selector -->
+    <div class="sidebar-section">
+      <span class="sidebar-label">// REGION</span>
+      <div class="country-select-wrap">
+        <select id="countrySelect" class="country-select" aria-label="Select country">
+          <!-- Populated by JS -->
+        </select>
+        <span class="select-arrow">▾</span>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="sidebar-section">
+      <span class="sidebar-label">// FEED</span>
+      <nav class="cat-nav" id="catNav">
+        <!-- Populated by JS -->
+      </nav>
+    </div>
+
+    <!-- Trending Tags -->
+    <div class="sidebar-section">
+      <span class="sidebar-label">// TRENDING</span>
+      <div class="trending-tags" id="trendingTags">
+        <span class="tag">AI</span>
+        <span class="tag">Climate</span>
+        <span class="tag">Markets</span>
+        <span class="tag">Space</span>
+        <span class="tag">Crypto</span>
+        <span class="tag">Elections</span>
+        <span class="tag">Health</span>
+        <span class="tag">Ukraine</span>
+      </div>
+    </div>
+
+    <!-- Bookmarks -->
+    <div class="sidebar-section bookmarks-section">
+      <span class="sidebar-label">// SAVED <span class="bm-count" id="bmCount">0</span></span>
+      <button class="view-bookmarks-btn" id="viewBookmarksBtn">
+        View Bookmarks
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+
+    <!-- Sidebar footer -->
+    <div class="sidebar-footer">
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">
+        <span class="theme-icon" id="themeIcon">☀</span>
+        <span id="themeLabel">Light Mode</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ░░ MAIN ░░ -->
+  <div class="app-shell">
+
+    <!-- Top Bar -->
+    <header class="topbar" id="topbar">
+      <button class="menu-btn" id="menuBtn" aria-label="Toggle sidebar">
+        <span></span><span></span><span></span>
+      </button>
+
+      <!-- Search -->
+      <div class="search-bar">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search intelligence…" autocomplete="off" spellcheck="false" />
+        <kbd class="search-kbd" id="searchKbd">↵</kbd>
+      </div>
+
+      <!-- Live clock -->
+      <div class="topbar-right">
+        <div class="live-clock" id="liveClock"></div>
+        <div class="signal-dot" title="Live feed active"></div>
+      </div>
+    </header>
+
+    <!-- Ticker -->
+    <div class="ticker" id="ticker">
+      <span class="ticker-tag">LIVE</span>
+      <div class="ticker-scroll">
+        <span class="ticker-text" id="tickerText">Initialising feed…</span>
+      </div>
+    </div>
+
+    <!-- Feed Header -->
+    <div class="feed-header" id="feedHeader">
+      <div class="feed-meta">
+        <span class="feed-tag" id="feedTag">GENERAL</span>
+        <span class="feed-count" id="feedCount"></span>
+      </div>
+      <h1 class="feed-title" id="feedTitle">Top Stories</h1>
+    </div>
+
+    <!-- ── LOADER ── -->
+    <div class="loader-overlay" id="loaderOverlay">
+      <div class="loader-box">
+        <div class="loader-bar"><div class="loader-fill"></div></div>
+        <span class="loader-text" id="loaderText">FETCHING FEED…</span>
+      </div>
+    </div>
+
+    <!-- ── ERROR ── -->
+    <div class="error-panel" id="errorPanel" style="display:none;">
+      <div class="error-box">
+        <div class="error-code">ERR_FEED</div>
+        <p id="errorMsg">Could not connect to news feed.</p>
+        <button class="btn-primary" id="retryBtn">↻ Retry</button>
+        <div class="api-note">
+          <strong>🔑 Activate live feed:</strong> open <code>config.js</code> and set your free key from
+          <a href="https://newsapi.org" target="_blank">newsapi.org</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── NEWS GRID ── -->
+    <div class="news-grid" id="newsGrid"></div>
+
+    <!-- ── NO RESULTS ── -->
+    <div class="no-results" id="noResults" style="display:none;">
+      <span class="no-results-icon">∅</span>
+      <p>No results for <strong id="noResultsTerm"></strong></p>
+    </div>
+
+    <!-- ── INFINITE SCROLL SENTINEL ── -->
+    <div class="scroll-sentinel" id="scrollSentinel"></div>
+
+    <!-- ── SCROLL LOADER ── -->
+    <div class="scroll-loader" id="scrollLoader" style="display:none;">
+      <span class="dot-pulse"><span></span><span></span><span></span></span>
+      <span>Loading more…</span>
+    </div>
+
+    <!-- ── END OF FEED ── -->
+    <div class="end-of-feed" id="endOfFeed" style="display:none;">
+      — END OF FEED —
+    </div>
+
+  </div><!-- /app-shell -->
+
+  <!-- ░░ BOOKMARKS PANEL ░░ -->
+  <div class="bm-overlay" id="bmOverlay" style="display:none;" aria-modal="true" role="dialog">
+    <div class="bm-panel">
+      <div class="bm-header">
+        <h2 class="bm-title">// SAVED ARTICLES</h2>
+        <button class="bm-close" id="bmClose" aria-label="Close bookmarks">✕</button>
+      </div>
+      <div class="bm-list" id="bmList">
+        <!-- Populated by JS -->
+      </div>
+      <div class="bm-empty" id="bmEmpty" style="display:none;">
+        <p>No saved articles yet.</p>
+        <p class="bm-hint">Click the bookmark icon on any card to save it here.</p>
+      </div>
+      <div class="bm-footer">
+        <button class="btn-ghost" id="clearBookmarksBtn">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
